@@ -1,4 +1,4 @@
-## 📄 Documentación Técnica — `cmd_to_lnk.py`
+## 📄 Documentación Técnica — `lnkforge.py`
 
 ### 📌 Descripción General
 Este script permite generar archivos `.lnk` (accesos directos de Windows) que contienen comandos embebidos de PowerShell. El payload se codifica en Base64 utilizando UTF-16BE, respetando los límites de tamaño del archivo `.lnk` generado, e insertándolo en un archivo base modificado (`modular_lnk.txt`). Se soporta un modo "minimal" para que la consola se ejecute minimizada.
@@ -53,7 +53,7 @@ Este script permite generar archivos `.lnk` (accesos directos de Windows) que co
 
 ```bash
 $ python cmd_to_lnk.py
-:: CMD TO LNK :: =>> [INFO]
+:: LNKFORGE :: =>> [INFO]
 :: Todo lo que escribas a continuacion quedara guardado como acceso directo ::
 ...
 
