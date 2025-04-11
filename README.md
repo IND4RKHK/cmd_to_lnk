@@ -1,81 +1,93 @@
-## 📄 Documentación Técnica — `cmd_to_lnk.py`
+## 📄 Technical Documentation — `cmd_to_lnk.py`
 
-### 📌 Descripción General
-Este script permite generar archivos `.lnk` (accesos directos de Windows) que contienen comandos embebidos de PowerShell. El payload se codifica en Base64 utilizando UTF-16BE, respetando los límites de tamaño del archivo `.lnk` generado, e insertándolo en un archivo base modificado (`modular_lnk.txt`). Se soporta un modo "minimal" para que la consola se ejecute minimizada.
+### 📌 Overview
+
+This script allows the generation of `.lnk` (Windows shortcut) files that embed PowerShell commands. The payload is Base64-encoded using UTF-16BE and inserted into a modified base file (`modular_lnk.txt`). It supports a "minimal" mode where the PowerShell window executes in minimized state.
+
+> 💡 This tool is especially useful for users who want to generate Windows `.lnk` files from Linux or Termux environments without needing access to a Windows GUI.
+
+It also supports variants with or without icons and visible/minimized execution, using dynamic LNK templates:
+
+- `normal` → Visible PowerShell
+- `minimal` → Minimized PowerShell
+- `normal-icon` → Visible PowerShell with icon
+- `minimal-icon` → Minimized PowerShell with icon
 
 ---
 
-### ⚙️ Requisitos Previos
+### ⚙️ Requirements
 
 - Python 3.x
-- Archivo `modular_lnk.txt` con accesos directos codificados en Base64, en dos líneas:
-  - Línea 0: LNK normal (ventana visible)
-  - Línea 1: LNK minimal (ventana minimizada)
+- A `modular_lnk.txt` file containing Base64-encoded `.lnk` templates with four lines:
+  - Line 0: Normal LNK (visible window)
+  - Line 1: Minimal LNK (minimized window)
+  - Line 2: Normal LNK with icon
+  - Line 3: Minimal LNK with icon
 
 ---
 
-### 🔧 Variables Principales
+### 🔧 Key Variables
 
-| Variable | Tipo | Descripción |
-|---------|------|-------------|
-| `b64_extra_bytes` | `str` | Cadena de relleno en Base64 que se reemplaza por el código embebido. Aumenta el espacio en memoria del `.lnk`. |
-| `max_bytes` | `int` | Límite en bytes del código embebido, basado en la longitud de `b64_extra_bytes`. |
-| `buffer_` | `str` | Acumulador de comandos ingresados por el usuario. |
-| `minimal_` | `bool` | Flag que define si el `.lnk` se debe ejecutar en modo minimizado. |
-| `json_lines` | `dict` | Diccionario que mapea el modo de ejecución (`normal`, `minimal`) a líneas del archivo base. |
-
----
-
-### 🧠 Lógica Interna
-
-#### 1. **Ingreso de Comandos**
-
-- El script entra en un bucle interactivo (`while True`) donde el usuario escribe comandos.
-- Si se ingresa `minimal`, se activa la ejecución minimizada.
-- Los comandos se concatenan en `buffer_` y se valida que su codificación en Base64 no exceda `max_bytes`.
-
-#### 2. **Validación de Tamaño**
-
-- Se utiliza la función `check_len_or_save()` para:
-  - Obtener la longitud del comando en Base64 (`check_ = True`)
-  - Codificar el payload final (`check_ = False`)
-
-#### 3. **Construcción del LNK**
-
-- Se abre `modular_lnk.txt`, se selecciona la línea adecuada (`normal` o `minimal`).
-- Se reemplaza `b64_extra_bytes` por el contenido codificado (`code_`).
-- Se ajustan los caracteres de padding (`=`) para cumplir con la codificación Base64 válida.
-- Finalmente, se guarda el resultado como `command_py.lnk`.
+| Variable           | Type   | Description |
+|-------------------|--------|-------------|
+| `b64_extra_bytes` | `str`  | Base64 filler string that is replaced by the embedded code. Increases memory space in the `.lnk`. |
+| `max_bytes`       | `int`  | Maximum payload length, derived from `b64_extra_bytes`. |
+| `buffer_`         | `str`  | Accumulates the user's input commands. |
+| `minimal_`        | `bool` | Flag to determine whether to use the minimized `.lnk` template. |
+| `json_lines`      | `dict` | Maps execution modes (`normal`, `minimal`, `normal-icon`, `minimal-icon`) to template lines. |
 
 ---
 
-### 🧪 Ejemplo de Uso
+### 🧠 Internal Logic
+
+#### 1. **Command Input**
+
+- The script starts an interactive loop (`while True`) where the user types commands.
+- Typing `minimal`, `normal-icon`, or `minimal-icon` changes the execution mode.
+- Commands are concatenated into `buffer_` and checked to ensure the Base64 encoding stays within `max_bytes`.
+
+#### 2. **Length Validation**
+
+- The `check_len_or_save()` function is used to:
+  - Return Base64 length (`check_ = True`)
+  - Return the actual encoded payload (`check_ = False`)
+
+#### 3. **LNK Construction**
+
+- The script reads `modular_lnk.txt`, selects the correct template line.
+- It replaces `b64_extra_bytes` with the encoded payload (`code_`).
+- Padding (`=`) is adjusted to ensure Base64 validity.
+- The final `.lnk` file is saved as `command_py.lnk`.
+
+---
+
+### 🧪 Example Usage
 
 ```bash
 $ python cmd_to_lnk.py
 :: CMD TO LNK :: =>> [INFO]
-:: Todo lo que escribas a continuacion quedara guardado como acceso directo ::
+:: Everything you write below will be stored as a shortcut ::
 ...
 
 cmd_lnk_executor >> systeminfo
 cmd_lnk_executor >> ipconfig
-cmd_lnk_executor >> minimal
+cmd_lnk_executor >> minimal-icon
 cmd_lnk_executor >> whoami
 cmd_lnk_executor >> exit
 ```
 
-> Resultado: Se guarda un `.lnk` llamado `command_py.lnk` que ejecuta `systeminfo; ipconfig; whoami;` con la ventana de PowerShell minimizada.
+> Output: A `.lnk` file named `command_py.lnk` will be saved. It will run `systeminfo; ipconfig; whoami;` in a minimized PowerShell window with a custom icon.
 
 ---
 
-### ⚠️ Consideraciones de Seguridad
+### ⚠️ Security Considerations
 
-- Este script puede ser utilizado con fines ofensivos (ej. persistencia en sistemas Windows), por lo que se recomienda su uso en entornos controlados y con fines educativos o de auditoría (hacking ético).
-- Los `.lnk` generados están “corrompidos” en estructura pero siguen siendo funcionales.
+- This script can be used for offensive purposes (e.g., Windows persistence techniques). It is intended for educational or ethical hacking use only, in controlled environments.
+- The generated `.lnk` files are structurally "corrupted" but remain fully functional.
 
 ---
 
-### 🧼 Tips adicionales
+### 🧼 Additional Tips
 
-- Se recomienda limpiar el Base64 del `.lnk` de saltos de línea antes de usarlo como plantilla (`https://pinetools.com/es/eliminar-saltos-linea`).
-- Puedes experimentar con cadenas más largas reemplazando `b64_extra_bytes` para expandir el tamaño del payload permitido.
+- It is recommended to clean line breaks from the Base64 output using: [https://pinetools.com/remove-line-breaks](https://pinetools.com/remove-line-breaks)
+- You can experiment with longer payloads by replacing `b64_extra_bytes` to increase allowed size.
