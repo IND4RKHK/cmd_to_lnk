@@ -1,5 +1,7 @@
 ## 📄 Technical Documentation — `cmd_to_lnk.py`
 
+![Lnkforge Banner](https://repository-images.githubusercontent.com/963398358/850600df-af13-4d69-8c81-0d4312082eed)
+
 ### 📌 Overview
 
 This script allows the generation of `.lnk` (Windows shortcut) files that embed PowerShell commands. The payload is Base64-encoded using UTF-16BE and inserted into a modified base file (`modular_lnk.txt`). It supports a "minimal" mode where the PowerShell window executes in minimized state.
