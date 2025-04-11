@@ -1,10 +1,10 @@
-## 📄 Technical Documentation — `cmd_to_lnk.py`
+## 📄 Technical Documentation — `lnkforge.py`
 
 ![Lnkforge Banner](https://repository-images.githubusercontent.com/963398358/850600df-af13-4d69-8c81-0d4312082eed)
 
 ### 📌 Overview
 
-This script allows the generation of `.lnk` (Windows shortcut) files that embed PowerShell commands. The payload is Base64-encoded using UTF-16BE and inserted into a modified base file (`modular_lnk.txt`). It supports a "minimal" mode where the PowerShell window executes in minimized state.
+This script allows the generation of `.lnk` (Windows shortcut) files that embed PowerShell commands. The payload is Base64-encoded using UTF-16BE and inserted into a modified base file (`modular_lnk.b64`). It supports a "minimal" mode where the PowerShell window executes in minimized state.
 
 > 💡 This tool is especially useful for users who want to generate Windows `.lnk` files from Linux or Termux environments without needing access to a Windows GUI.
 
@@ -20,7 +20,7 @@ It also supports variants with or without icons and visible/minimized execution,
 ### ⚙️ Requirements
 
 - Python 3.x
-- A `modular_lnk.txt` file containing Base64-encoded `.lnk` templates with four lines:
+- A `modular_lnk.b64` file containing Base64-encoded `.lnk` templates with four lines:
   - Line 0: Normal LNK (visible window)
   - Line 1: Minimal LNK (minimized window)
   - Line 2: Normal LNK with icon
@@ -56,10 +56,10 @@ It also supports variants with or without icons and visible/minimized execution,
 
 #### 3. **LNK Construction**
 
-- The script reads `modular_lnk.txt`, selects the correct template line.
+- The script reads `modular_lnk.b64`, selects the correct template line.
 - It replaces `b64_extra_bytes` with the encoded payload (`code_`).
 - Padding (`=`) is adjusted to ensure Base64 validity.
-- The final `.lnk` file is saved as `command_py.lnk`.
+- The final `.lnk` file is saved as `lnkforge_date.lnk`.
 
 ---
 
@@ -78,7 +78,7 @@ cmd_lnk_executor >> whoami
 cmd_lnk_executor >> exit
 ```
 
-> Output: A `.lnk` file named `command_py.lnk` will be saved. It will run `systeminfo; ipconfig; whoami;` in a minimized PowerShell window with a custom icon.
+> Output: A `.lnk` file named `lnkforge_date.lnk` will be saved. It will run `systeminfo; ipconfig; whoami;` in a minimized PowerShell window with a custom icon.
 
 ---
 
