@@ -13,7 +13,6 @@ try:
 except:
     b64_extra_bytes = "ACAAIgAg"+"AD0APQA9"*45+"AD0APQAgACI"
 
-exit(0)
 
 # Varibale que limita el relleno de bytes
 max_bytes = len(b64_extra_bytes)
