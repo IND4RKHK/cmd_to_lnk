@@ -387,7 +387,7 @@ try:
             except:
                 buffer_ = " " + buffer_
                 code_ = check_len_or_save(buffer_, False)
-                all_b64.replace(b64_extra_bytes, code_).replace("=", "").strip()
+                all_b64 = file_lines.replace(b64_extra_bytes, code_).replace("=", "").strip()
             
             # Si todo sale bien, se termina
             else:
